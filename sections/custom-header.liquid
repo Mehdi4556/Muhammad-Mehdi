@@ -1,0 +1,463 @@
+<div class="custom-header">
+  <div class="page-width">
+    <div class="custom-header__content">
+      
+      <!-- Mobile menu toggle button -->
+      <div class="custom-header__mobile-toggle">
+        <button class="mobile-toggle-btn" aria-label="Menu" aria-expanded="false">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+      
+      <div class="custom-header__logo">
+        <a href="{{ routes.root_url }}">
+          {% if section.settings.logo != blank %}
+            <img 
+              src="{{ section.settings.logo | image_url: 'master' }}" 
+              alt="{{ section.settings.logo.alt | default: shop.name }}"
+              width="{{ section.settings.logo_width }}"
+              height="{{ section.settings.logo_width | divided_by: section.settings.logo.aspect_raPtio }}"
+            >
+          {% else %}
+            <span>{{ section.settings.custom_text | default: shop.name }}</span>
+          {% endif %}
+        </a>
+      </div>
+
+      <div class="custom-header__tagline">
+        <p>{{ section.settings.tagline }}</p>
+      </div>
+
+      <div class="custom-header__cta">
+        {% assign link = section.settings.button_link | default: '/collections/all' %}
+        <a href="{{ link }}" class="custom-header__button">
+          {{ section.settings.button_text }}
+          <svg width="27" height="12" viewBox="0 0 27 12" fill="none" xmlns="http://www.w3.org/2000/svg" class="arrow-icon">
+            <path d="M1 6H26M26 6L21 1M26 6L21 11" stroke="#000000" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </a>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- Mobile menu drawer that slides in from left -->
+<div class="mobile-menu-drawer">
+  <div class="mobile-menu-drawer__header">
+    <button class="mobile-menu-close-btn" aria-label="Close menu">
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="18" y1="6" x2="6" y2="18"></line>
+        <line x1="6" y1="6" x2="18" y2="18"></line>
+      </svg>
+    </button>
+  </div>
+  <div class="mobile-menu-drawer__content">
+    <!-- Mobile menu links go here -->
+    <ul class="mobile-menu-links">
+      <li><a href="/collections/all">Shop All</a></li>
+      <li><a href="/cart">Cart</a></li>
+      <li><a href="/pages/about-us">About</a></li>
+      <li><a href="/pages/contact">Contact</a></li>
+    </ul>
+    
+    <!-- Mobile CTA button -->
+    <div class="mobile-menu-cta">
+      {% assign link = section.settings.button_link | default: '/collections/all' %}
+      <a href="{{ link }}" class="custom-header__button">
+        {{ section.settings.button_text }}
+        <svg width="27" height="12" viewBox="0 0 27 12" fill="none" xmlns="http://www.w3.org/2000/svg" class="arrow-icon">
+          <path d="M1 6H26M26 6L21 1M26 6L21 11" stroke="#000000" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </a>
+    </div>
+  </div>
+</div>
+
+<style>
+  .custom-header {
+    background-color: #f9f9f9;
+    font-family: 'Jost', sans-serif;
+    padding: 6px;
+    border-bottom: 1px solid #f0f0f0;
+    position: relative;
+    z-index: 10;
+  }
+  
+  .page-width {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 60px;
+  }
+  
+  .custom-header__content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: relative;
+    height: 60px;
+    width: 100%;
+    gap: 40px;
+  }
+  
+  .custom-header__mobile-toggle {
+    display: none;
+  }
+
+  .mobile-toggle-btn {
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+  }
+  
+  .custom-header__logo {
+    flex: 0 1 auto;
+    min-width: 200px;
+    margin-right: 40px;
+  }
+  
+  .custom-header__logo img {
+    max-height: 40px;
+    width: auto;
+  }
+  
+  .custom-header__logo a {
+    text-decoration: none;
+    color: #000;
+    font-weight: 600;
+    font-family: 'Jost', sans-serif;
+    font-size: 25px;
+    letter-spacing: 0.3px;
+    display: inline-block;
+    white-space: nowrap;
+  }
+  
+  .custom-header__tagline {
+    flex: 1;
+    text-align: center;
+    padding: 0 40px;
+    min-width: 300px;
+  }
+  
+  .custom-header__tagline p {
+    margin: 0;
+    font-size: 18px;
+    color: #666;
+    font-family: 'Jost', sans-serif;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+  }
+  
+  .custom-header__cta {
+    flex: 0 1 auto;
+    min-width: 180px;
+    margin-left: 40px;
+  }
+  
+  .custom-header__button {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background-color: #f7e84c;
+    color: #000;
+    padding: 10px 20px;
+    text-decoration: none;
+    font-weight: 400;
+    font-family: 'Jost', sans-serif;
+    line-height: 25px;
+    font-size: 15px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    white-space: nowrap;
+    position: relative;
+    overflow: hidden;
+    z-index: 1;
+  }
+  
+  .custom-header__button:before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 0;
+    height: 100%;
+    background-color: #000;
+    transition: width 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    z-index: -1;
+  }
+  
+  .custom-header__button:hover:before {
+    width: 100%;
+  }
+  
+  .custom-header__button:hover {
+    color: #fff;
+    transform: translateX(5px);
+  }
+  
+  .custom-header__button .arrow-icon {
+    width: 18px;
+    height: 18px;
+    transition: transform 0.2s ease;
+  }
+
+  .custom-header__button .arrow-icon path {
+    stroke: #000000 !important;
+    transition: stroke 0.2s ease;
+  }
+
+  .custom-header__button:hover .arrow-icon {
+    transform: translateX(3px);
+  }
+
+  .custom-header__button:hover .arrow-icon path {
+    stroke: #ffffff !important;
+  }
+
+  /* Mobile menu drawer styles */
+  .mobile-menu-drawer {
+    position: fixed;
+    top: 0;
+    left: -300px;
+    width: 300px;
+    height: 100vh;
+    background-color: #fff;
+    z-index: 1000;
+    transition: left 0.3s ease;
+    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+    overflow-y: auto;
+  }
+
+  .mobile-menu-drawer.active {
+    left: 0;
+  }
+
+  .mobile-menu-drawer__header {
+    padding: 20px;
+    border-bottom: 1px solid #f0f0f0;
+    display: flex;
+    justify-content: flex-end;
+  }
+
+  .mobile-menu-close-btn {
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+  }
+
+  .mobile-menu-drawer__content {
+    padding: 20px;
+  }
+
+  .mobile-menu-links {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 30px 0;
+  }
+
+  .mobile-menu-links li {
+    margin-bottom: 15px;
+  }
+
+  .mobile-menu-links a {
+    font-family: 'Jost', sans-serif;
+    font-size: 18px;
+    color: #000;
+    text-decoration: none;
+    font-weight: 500;
+    display: block;
+    padding: 5px 0;
+  }
+
+  .mobile-menu-cta {
+    margin-top: 30px;
+  }
+  
+  @media screen and (max-width: 989px) {
+    .page-width {
+      padding: 0 30px;
+    }
+    
+    .custom-header__content {
+      gap: 20px;
+    }
+    
+    .custom-header__logo {
+      min-width: 160px;
+      margin-right: 20px;
+    }
+    
+    .custom-header__tagline {
+      padding: 0 20px;
+      min-width: 200px;
+    }
+    
+    .custom-header__cta {
+      margin-left: 20px;
+      min-width: 150px;
+    }
+  }
+  
+  @media screen and (max-width: 749px) {
+    .custom-header {
+      padding: 12px 0;
+      background-color: #fff;
+    }
+    
+    .page-width {
+      padding: 0 20px;
+    }
+    
+    .custom-header__content {
+      height: 50px;
+      flex-direction: row;
+      justify-content: center;
+      align-items: center;
+      gap: 0;
+    }
+    
+    .custom-header__mobile-toggle {
+      display: block;
+      position: absolute;
+      left: 0;
+      top: 50%;
+      transform: translateY(-50%);
+    }
+    
+    .custom-header__logo {
+      flex: 0 0 auto;
+      margin: 0;
+      min-width: auto;
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+    
+    .custom-header__logo a {
+      font-size: 20px;
+    }
+    
+    .custom-header__tagline,
+    .custom-header__cta {
+      display: none;
+    }
+    
+    .menu-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      z-index: 999;
+    }
+    
+    .menu-overlay.active {
+      display: block;
+    }
+  }
+</style>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const mobileToggleBtn = document.querySelector('.mobile-toggle-btn');
+    const mobileMenuDrawer = document.querySelector('.mobile-menu-drawer');
+    const mobileMenuCloseBtn = document.querySelector('.mobile-menu-close-btn');
+    const body = document.body;
+    
+    const menuOverlay = document.createElement('div');
+    menuOverlay.className = 'menu-overlay';
+    body.appendChild(menuOverlay);
+    
+    if (mobileToggleBtn) {
+      mobileToggleBtn.addEventListener('click', function() {
+        mobileMenuDrawer.classList.add('active');
+        menuOverlay.classList.add('active');
+        body.style.overflow = 'hidden';
+      });
+    }
+    
+    function closeMenu() {
+      mobileMenuDrawer.classList.remove('active');
+      menuOverlay.classList.remove('active');
+      body.style.overflow = '';
+    }
+    
+    if (mobileMenuCloseBtn) {
+      mobileMenuCloseBtn.addEventListener('click', closeMenu);
+    }
+    
+    menuOverlay.addEventListener('click', closeMenu);
+  });
+</script>
+
+{% schema %}
+{
+  "name": "Custom Header",
+  "settings": [
+    {
+      "type": "image_picker",
+      "id": "logo",
+      "label": "Logo"
+    },
+    {
+      "type": "range",
+      "id": "logo_width",
+      "min": 50,
+      "max": 250,
+      "step": 10,
+      "default": 100,
+      "unit": "px",
+      "label": "Logo width"
+    },
+    {
+      "type": "text",
+      "id": "custom_text",
+      "label": "Store name",
+      "default": "TISSO VISION"
+    },
+    {
+      "type": "text",
+      "id": "tagline",
+      "label": "Tagline",
+      "default": "Find the ideal gift for your loved ones."
+    },
+    {
+      "type": "text",
+      "id": "button_text",
+      "label": "Button text",
+      "default": "CHOOSE GIFT"
+    },
+    {
+      "type": "url",
+      "id": "button_link",
+      "label": "Button link"
+    },
+    {
+      "type": "header",
+      "content": "Mobile Menu Settings"
+    },
+    {
+      "type": "link_list",
+      "id": "mobile_menu",
+      "label": "Mobile menu",
+      "default": "main-menu"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Custom Header",
+      "category": "Custom Content"
+    }
+  ]
+}
+{% endschema %}
