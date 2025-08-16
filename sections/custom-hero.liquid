@@ -1,0 +1,160 @@
+{{ 'base.css' | asset_url | stylesheet_tag }}
+
+<style>
+  .custom-hero {
+    padding: 4rem 0;
+    background: #fff;
+  }
+
+  .custom-hero__layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4rem;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 2rem;
+  }
+
+  .custom-hero__image-content {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+  }
+
+  .custom-hero__main-image {
+    width: 100%;
+    height: auto;
+    max-height: 600px;
+    object-fit: cover;
+    border-radius: 8px;
+  }
+
+  .custom-hero__text-content {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 2rem 0;
+  }
+
+  .custom-hero__heading {
+    color: #000;
+    font-size: 3rem;
+    margin-bottom: 1.5rem;
+    line-height: 1.2;
+  }
+
+  .custom-hero__description {
+    color: #333;
+    font-size: 1.25rem;
+    margin-bottom: 2rem;
+    line-height: 1.6;
+  }
+
+  .custom-hero__additional-text {
+    color: #666;
+    font-size: 1.1rem;
+    margin-top: 2rem;
+    line-height: 1.6;
+  }
+
+  .custom-hero__button {
+    background: #000;
+    color: #fff;
+    padding: 1rem 2.5rem;
+    border: none;
+    border-radius: 4px;
+    font-size: 1.1rem;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    display: inline-block;
+    max-width: fit-content;
+    margin-top: 1rem;
+  }
+
+  .custom-hero__button:hover {
+    background: #222;
+    transform: translateY(-2px);
+  }
+
+  @media screen and (max-width: 749px) {
+    .custom-hero__layout {
+      grid-template-columns: 1fr;
+      gap: 2rem;
+    }
+
+    .custom-hero__text-content {
+      text-align: center;
+      align-items: center;
+      padding: 1rem 0;
+    }
+
+    .custom-hero__heading {
+      font-size: 2.5rem;
+    }
+  }
+</style>
+
+<div class="custom-hero">
+  <div class="custom-hero__layout">
+    <div class="custom-hero__image-content">
+      <img 
+        src="{{ 'gift-guide-illustration.png' | asset_url }}"
+        alt="Gift Guide Illustration"
+        class="custom-hero__main-image"
+        loading="eager"
+        width="700"
+        height="600"
+      >
+    </div>
+    <div class="custom-hero__text-content">
+      <h1 class="custom-hero__heading">Welcome to Our Collection</h1>
+      <p class="custom-hero__description">Discover our carefully curated selection of products designed to enhance your lifestyle.</p>
+      <a href="{{ routes.all_products_collection_url }}" class="custom-hero__button">Shop Now</a>
+      <p class="custom-hero__additional-text">From fashion to home decor, find everything you need in one place. Browse our latest arrivals and trending items.</p>
+    </div>
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "Custom Hero",
+  "tag": "section",
+  "class": "section",
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Welcome to Our Collection"
+    },
+    {
+      "type": "text",
+      "id": "description",
+      "label": "Description",
+      "default": "Discover our carefully curated selection of products designed to enhance your lifestyle."
+    },
+    {
+      "type": "text",
+      "id": "button_text",
+      "label": "Button Text",
+      "default": "Shop Now"
+    },
+    {
+      "type": "url",
+      "id": "button_link",
+      "label": "Button Link"
+    },
+    {
+      "type": "text",
+      "id": "additional_text",
+      "label": "Additional Text",
+      "default": "From fashion to home decor, find everything you need in one place. Browse our latest arrivals and trending items."
+    }
+  ],
+  "presets": [
+    {
+      "name": "Custom Hero"
+    }
+  ]
+}
+{% endschema %}
