@@ -134,7 +134,7 @@
     --quick-add-left: calc(var(--quick-add-offset) + var(--padding-inline-end));
 
     position: absolute;
-    display: var(--quick-add-mobile-display, none);
+    display: flex !important;
     flex-direction: column;
     justify-content: flex-start;
     inset: max(var(--quick-add-top), calc((var(--border-radius) + var(--quick-add-top)) * (1 - cos(45deg))))
@@ -145,11 +145,11 @@
     height: auto;
     z-index: var(--layer-raised);
     cursor: default;
-    pointer-events: none;
+    pointer-events: auto;
 
     @media screen and (min-width: 750px) {
       --quick-add-offset: var(--padding-md);
-      display: var(--quick-add-display, flex);
+      display: flex !important;
     }
   }
 
@@ -163,7 +163,7 @@
 
   /* --- FIXED ROUND + BUTTON --- */
   .quick-add__button {
-    display: flex;
+    display: flex !important;
     align-items: center;
     justify-content: center;
     font-size: 1rem; /* size of + */
@@ -178,6 +178,8 @@
     padding: 0;
     line-height: 1;
     cursor: pointer;
+    opacity: 1 !important;
+    visibility: visible !important;
   }
 
   /* remove hover effect completely */
@@ -247,6 +249,27 @@
       opacity: 0;
       transform: translateX(-1em);
       position: absolute;
+    }
+  }
+
+  /* Mobile-specific styles to ensure plus icon visibility */
+  @media screen and (max-width: 749px) {
+    .quick-add {
+      display: flex !important;
+      pointer-events: auto !important;
+    }
+    
+    .quick-add__button {
+      display: flex !important;
+      opacity: 1 !important;
+      visibility: visible !important;
+      pointer-events: all !important;
+    }
+    
+    .plus-icon {
+      display: inline-block !important;
+      opacity: 1 !important;
+      visibility: visible !important;
     }
   }
 {% endstylesheet %}
