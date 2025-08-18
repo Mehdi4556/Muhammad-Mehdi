@@ -91,9 +91,10 @@
     align-items: center;
     justify-content: center;
     padding: 20px;
+    overflow: auto;
   }
 
-  /* container fixed size */
+  /* container fixed size - consistent across all devices */
   .popup-container {
     position: relative;
     width: var(--popup-width);
@@ -105,6 +106,8 @@
     animation: popupFadeIn 0.25s ease-out;
     border-radius: 4px;
     overflow: hidden;
+    min-width: var(--popup-width);
+    min-height: var(--popup-height);
   }
 
   @keyframes popupFadeIn {
@@ -373,27 +376,28 @@
 
   .add-to-cart-btn:hover .arrow-icon { transform: translateX(6px); }
 
-  /* Responsive: smaller screens stack vertically */
+  /* Keep popup size consistent across all devices */
   @media (max-width: 420px) {
     .popup-container {
-      width: calc(100% - 40px);
-      height: auto;
-      max-height: 90vh;
+      width: var(--popup-width);
+      height: var(--popup-height);
+      max-width: calc(100vw - 40px);
+      max-height: calc(100vh - 40px);
     }
 
     .popup-content {
-      padding: 14px;
+      padding: 18px 16px 12px;
     }
 
     .popup-top-section {
-      flex-direction: column;
+      flex-direction: row;
       gap: 12px;
     }
 
     .product-image {
-      width: 100%;
-      min-width: 0;
-      height: 160px;
+      width: 120px;
+      min-width: 120px;
+      height: 140px;
     }
   }
 </style>
