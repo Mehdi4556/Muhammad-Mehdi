@@ -435,6 +435,12 @@ function openPopup(data) {
   // Store the product data globally so addToCart can access it
   window.currentProductData = data;
   
+  // If we have a product URL but no variants, fetch the variants immediately
+  if (data && data.productUrl && (!data.variants || data.variants.length === 0)) {
+    console.log('Modal opened without variants. Fetching product data...');
+    fetchProductData(data.productUrl, data);
+  }
+  
   const popup = document.getElementById('product-popup');
   if (popup) {
     popup.style.display = 'flex';
@@ -559,10 +565,18 @@ function closePopup() {
 }
 
 function addToCart() {
+  console.log('=== ADD TO CART DEBUG START ===');
+  
   // Validate that all required elements exist
   const colorOption = document.querySelector('.color-option.active');
   const sizeSelect = document.getElementById('popup-size-select');
   const addToCartBtn = document.querySelector('.add-to-cart-btn');
+  
+  console.log('UI Elements found:', {
+    colorOption: !!colorOption,
+    sizeSelect: !!sizeSelect,
+    addToCartBtn: !!addToCartBtn
+  });
   
   if (!colorOption) {
     console.error('No color option selected');
@@ -585,6 +599,11 @@ function addToCart() {
   const selectedColor = colorOption.textContent;
   const selectedSize = sizeSelect.value;
   
+  console.log('Selected options:', {
+    selectedColor: selectedColor,
+    selectedSize: selectedSize
+  });
+  
   if (!selectedSize) {
     alert('Please select a size');
     return;
@@ -592,6 +611,8 @@ function addToCart() {
   
   // Get the stored product data
   const productData = window.currentProductData;
+  console.log('Product data:', productData);
+  
   if (!productData) {
     console.error('No product data available');
     alert('Unable to add to cart. Please try again.');
@@ -601,47 +622,97 @@ function addToCart() {
   // Find the variant ID based on selected options
   let variantId = null;
   
-  // If we have the actual product data with variants, use it
-  if (productData.variantId) {
-    variantId = productData.variantId;
-    console.log('Using stored variant ID:', variantId);
-  } else if (productData.variants && productData.variants.length > 0) {
+  console.log('Starting variant selection. Available variants:', productData.variants?.length || 0);
+  
+  // Always prioritize variants array if available - don't use fallback variantId if we have real variants
+  if (productData.variants && productData.variants.length > 0) {
     console.log('Available variants:', productData.variants);
     console.log('Selected options - Color:', selectedColor, 'Size:', selectedSize);
     
     // Try to find the variant based on selected options
     let variant = null;
     
-    // First try exact match
+    // First determine which options contain colors and sizes
+    const sampleVariant = productData.variants[0];
+    let colorOptionKey = null;
+    let sizeOptionKey = null;
+    
+    // Common color values to help identify color options
+    const commonColors = ['black', 'white', 'red', 'blue', 'green', 'yellow', 'pink', 'gray', 'grey', 'brown', 'purple', 'orange'];
+    // Common size values to help identify size options  
+    const commonSizes = ['xs', 's', 'm', 'l', 'xl', 'xxl', 'small', 'medium', 'large', 'extra small', 'extra large'];
+    
+    // Check which option position contains colors vs sizes
+    ['option1', 'option2', 'option3'].forEach(optionKey => {
+      if (sampleVariant[optionKey]) {
+        const optionValue = sampleVariant[optionKey].toLowerCase();
+        if (commonColors.includes(optionValue) && !colorOptionKey) {
+          colorOptionKey = optionKey;
+        } else if (commonSizes.includes(optionValue) && !sizeOptionKey) {
+          sizeOptionKey = optionKey;
+        }
+      }
+    });
+    
+    // If we couldn't auto-detect, assume standard Shopify convention: option1=color, option2=size
+    if (!colorOptionKey && !sizeOptionKey) {
+      colorOptionKey = 'option1';
+      sizeOptionKey = 'option2';
+    } else if (!colorOptionKey) {
+      colorOptionKey = sizeOptionKey === 'option1' ? 'option2' : 'option1';
+    } else if (!sizeOptionKey) {
+      sizeOptionKey = colorOptionKey === 'option1' ? 'option2' : 'option1';
+    }
+    
+    console.log('Detected option mapping - Color:', colorOptionKey, 'Size:', sizeOptionKey);
+    
+    // Find exact match based on detected option mapping
     variant = productData.variants.find(v => {
-      const colorMatch = !selectedColor || v.option1 === selectedColor || v.option2 === selectedColor || v.option3 === selectedColor;
-      const sizeMatch = !selectedSize || v.option1 === selectedSize || v.option2 === selectedSize || v.option3 === selectedSize;
-      return colorMatch && sizeMatch;
+      const colorMatch = !selectedColor || (colorOptionKey && v[colorOptionKey] && v[colorOptionKey].toLowerCase() === selectedColor.toLowerCase());
+      const sizeMatch = !selectedSize || (sizeOptionKey && v[sizeOptionKey] && v[sizeOptionKey].toLowerCase() === selectedSize.toLowerCase());
+      const isAvailable = v.available !== false;
+      return colorMatch && sizeMatch && isAvailable;
     });
     
     if (variant) {
       variantId = variant.id;
       console.log('Found exact variant match:', variant);
     } else {
-      // Try partial match - just match one option
-      variant = productData.variants.find(v => {
-        return v.option1 === selectedColor || v.option1 === selectedSize || 
-               v.option2 === selectedColor || v.option2 === selectedSize ||
-               v.option3 === selectedColor || v.option3 === selectedSize;
-      });
+      // If exact match failed, try to find by color first (if size not selected or not found)
+      if (selectedColor && !selectedSize) {
+        variant = productData.variants.find(v => {
+          const colorMatch = colorOptionKey && v[colorOptionKey] && v[colorOptionKey].toLowerCase() === selectedColor.toLowerCase();
+          const isAvailable = v.available !== false;
+          return colorMatch && isAvailable;
+        });
+      }
+      
+      // If still no match, try to find by size first (if color not selected or not found)
+      if (!variant && selectedSize && !selectedColor) {
+        variant = productData.variants.find(v => {
+          const sizeMatch = sizeOptionKey && v[sizeOptionKey] && v[sizeOptionKey].toLowerCase() === selectedSize.toLowerCase();
+          const isAvailable = v.available !== false;
+          return sizeMatch && isAvailable;
+        });
+      }
       
       if (variant) {
         variantId = variant.id;
         console.log('Found partial variant match:', variant);
       } else {
-        // Fallback: use the first available variant
+        // Final fallback: use the first available variant
         const firstAvailableVariant = productData.variants.find(v => v.available !== false);
         if (firstAvailableVariant) {
           variantId = firstAvailableVariant.id;
-          console.warn('Exact variant match not found, using first available variant:', firstAvailableVariant);
+          console.warn('No variant match found for selected options, using first available variant:', firstAvailableVariant);
         }
       }
     }
+  } else if (productData.variantId) {
+    // Fallback to stored variant ID if no variants array available
+    variantId = productData.variantId;
+    console.warn('No variants array found, using stored variant ID as fallback. Selected options will be ignored:', variantId);
+    console.warn('This means the wrong variant might be added to cart. Consider fetching product data first.');
   }
   
   if (!variantId) {
@@ -651,12 +722,21 @@ function addToCart() {
     return;
   }
   
+  console.log('=== FINAL VARIANT SELECTION ===');
   console.log('Using variant ID for cart add:', variantId);
+  console.log('Selected Color:', selectedColor);
+  console.log('Selected Size:', selectedSize);
+  console.log('=== END DEBUG ===');
 
   // Create form data for the cart add request
   const formData = new FormData();
   formData.append('id', variantId);
   formData.append('quantity', '1');
+  
+  console.log('Form data being sent:', {
+    id: variantId,
+    quantity: '1'
+  });
   
   // Show loading state
   const originalText = addToCartBtn.innerHTML;
@@ -792,9 +872,10 @@ document.addEventListener('DOMContentLoaded', function() {
 document.addEventListener('click', function(e) {
   const button = e.target.closest('button, a');
   if (button && (button.textContent.includes('+') || button.classList.contains('quick-add'))) {
-    console.log("[v0] + button clicked:", button);
+    console.log("[Quick Add] + button clicked for product");
     
     const productContainer = button.closest('.product-item, .product-card, .grid-product, .product, [data-product]');
+    
     let productData = null;
     
     if (productContainer) {
@@ -813,6 +894,7 @@ document.addEventListener('click', function(e) {
       
       // Check if there's a variant picker with selected variant
       const variantPicker = productContainer.querySelector('variant-picker');
+      
       if (variantPicker) {
         const selectedVariant = variantPicker.querySelector('input[type="radio"]:checked');
         if (selectedVariant) {
@@ -823,11 +905,14 @@ document.addEventListener('click', function(e) {
         const variantInputs = variantPicker.querySelectorAll('input[data-variant-id]');
         variants = Array.from(variantInputs).map(input => ({
           id: input.dataset.variantId,
-          option1: input.value,
+          option1: input.dataset.option1 || input.value,
           option2: input.dataset.option2 || '',
           option3: input.dataset.option3 || '',
-          available: input.dataset.optionAvailable !== 'false'
+          available: input.dataset.optionAvailable !== 'false' && !input.disabled
         }));
+        console.log("[Quick Add] Found", variants.length, "variants in product card");
+      } else {
+        console.log("[Quick Add] No variant picker found - will fetch product data");
       }
       
       // Check for product form with variant ID
@@ -870,8 +955,16 @@ document.addEventListener('click', function(e) {
           productUrl: productUrl
         };
         
-        // If we don't have a variant ID but have a product URL, try to fetch the product data
-        if (!variantId && productUrl) {
+        console.log("[Quick Add] Product data extracted:", {
+          title: productData.title,
+          hasVariants: variants.length > 0,
+          hasVariantId: !!variantId,
+          hasProductUrl: !!productUrl
+        });
+        
+        // If we don't have proper variants data, fetch it from the product URL
+        if ((!variants || variants.length === 0) && productUrl) {
+          console.log("[Quick Add] Will fetch variants from product URL");
           fetchProductData(productUrl, productData);
         }
       }
@@ -885,23 +978,32 @@ document.addEventListener('click', function(e) {
 // Function to fetch additional product data if needed
 async function fetchProductData(productUrl, baseProductData) {
   try {
+    console.log('Fetching product variants from:', productUrl);
+    
     // Add .js to get JSON response
-    const jsonUrl = productUrl + '.js';
+    const jsonUrl = productUrl.split('?')[0] + '.js'; // Remove variant parameter from URL
+    console.log('JSON URL:', jsonUrl);
+    
     const response = await fetch(jsonUrl);
     const productJson = await response.json();
     
+    console.log('Fetched product JSON:', productJson);
+    
     if (productJson && productJson.variants) {
+      console.log('Found', productJson.variants.length, 'variants in product data');
+      
       // Update the stored product data with real variant information
-      if (window.currentProductData && window.currentProductData.id === baseProductData.id) {
+      if (window.currentProductData && window.currentProductData.id == baseProductData.id) {
         window.currentProductData.variants = productJson.variants;
-        window.currentProductData.variantId = productJson.variants[0]?.id;
+        // Don't override variantId here - let the user selection determine it
+        console.log('Updated currentProductData with variants:', window.currentProductData.variants);
         
         // Update the popup with real variant options
         updatePopupWithVariants(productJson.variants);
       }
     }
   } catch (error) {
-    console.warn('Could not fetch product data:', error);
+    console.error('Could not fetch product data:', error);
   }
 }
 
@@ -909,16 +1011,50 @@ async function fetchProductData(productUrl, baseProductData) {
 function updatePopupWithVariants(variants) {
   if (!variants || variants.length === 0) return;
   
-  // Extract unique option values
-  const option1Values = [...new Set(variants.map(v => v.option1).filter(Boolean))];
-  const option2Values = [...new Set(variants.map(v => v.option2).filter(Boolean))];
+  // Determine which options contain colors and sizes (same logic as addToCart function)
+  const sampleVariant = variants[0];
+  let colorOptionKey = null;
+  let sizeOptionKey = null;
   
-  // Update color options if we have option1 values
-  if (option1Values.length > 0) {
+  // Common color and size values to help identify option types
+  const commonColors = ['black', 'white', 'red', 'blue', 'green', 'yellow', 'pink', 'gray', 'grey', 'brown', 'purple', 'orange'];
+  const commonSizes = ['xs', 's', 'm', 'l', 'xl', 'xxl', 'small', 'medium', 'large', 'extra small', 'extra large'];
+  
+  // Check which option position contains colors vs sizes
+  ['option1', 'option2', 'option3'].forEach(optionKey => {
+    if (sampleVariant[optionKey]) {
+      const optionValue = sampleVariant[optionKey].toLowerCase();
+      if (commonColors.includes(optionValue) && !colorOptionKey) {
+        colorOptionKey = optionKey;
+      } else if (commonSizes.includes(optionValue) && !sizeOptionKey) {
+        sizeOptionKey = optionKey;
+      }
+    }
+  });
+  
+  // If we couldn't auto-detect, assume standard Shopify convention: option1=color, option2=size
+  if (!colorOptionKey && !sizeOptionKey) {
+    colorOptionKey = 'option1';
+    sizeOptionKey = 'option2';
+  } else if (!colorOptionKey) {
+    colorOptionKey = sizeOptionKey === 'option1' ? 'option2' : 'option1';
+  } else if (!sizeOptionKey) {
+    sizeOptionKey = colorOptionKey === 'option1' ? 'option2' : 'option1';
+  }
+  
+  // Extract unique option values based on detected mapping
+  const colorValues = [...new Set(variants.map(v => v[colorOptionKey]).filter(Boolean))];
+  const sizeValues = [...new Set(variants.map(v => v[sizeOptionKey]).filter(Boolean))];
+  
+  console.log('Updating popup with variants. Color option:', colorOptionKey, 'Size option:', sizeOptionKey);
+  console.log('Available colors:', colorValues, 'Available sizes:', sizeValues);
+  
+  // Update color options
+  if (colorValues.length > 0) {
     const colorContainer = document.getElementById('popup-color-options');
     if (colorContainer) {
       colorContainer.innerHTML = '';
-      option1Values.forEach((color, index) => {
+      colorValues.forEach((color, index) => {
         const button = document.createElement('button');
         button.className = `color-option ${index === 0 ? 'active' : ''}`;
         button.textContent = color;
@@ -936,12 +1072,12 @@ function updatePopupWithVariants(variants) {
     }
   }
   
-  // Update size options if we have option2 values
-  if (option2Values.length > 0) {
+  // Update size options
+  if (sizeValues.length > 0) {
     const sizeSelect = document.getElementById('popup-size-select');
     if (sizeSelect) {
       sizeSelect.innerHTML = '<option value="">Choose your size</option>';
-      option2Values.forEach(size => {
+      sizeValues.forEach(size => {
         const option = document.createElement('option');
         option.value = size;
         option.textContent = size;
