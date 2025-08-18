@@ -9,7 +9,24 @@
   body{
     font-family:'Lustria'
   }
-  </style>
+  
+  /* Specific styling for "Tisso Vision in the Wild" text */
+  .text-block h3,
+  .text-block.h3 > * {
+    font-family: 'Lustria', serif !important;
+    font-weight: 400 !important;
+    line-height: 120% !important;
+    font-size: 2.5rem !important; /* Increased font size to 40px */
+  }
+  
+  /* Target all h3 elements in text blocks to ensure consistent styling */
+  .text-block h3 {
+    font-family: 'Lustria', serif !important;
+    font-weight: 400 !important;
+    line-height: 120% !important;
+    font-size: 2.5rem !important; /* Increased font size to 40px */
+  }
+</style>
 
 {% schema %}
 {
