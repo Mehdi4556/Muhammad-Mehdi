@@ -26,6 +26,13 @@
     line-height: 120% !important;
     font-size: 2.5rem !important; /* Increased font size to 40px */
   }
+  
+  /* Hide "Tisso Vision in the Wild" text on mobile devices */
+  @media screen and (max-width: 749px) {
+    .text-block h3 {
+      display: none !important;
+    }
+  }
 </style>
 
 {% schema %}
