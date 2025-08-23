@@ -426,678 +426,378 @@
 </style>
 
 <script>
-  function openPopup(data) {
-    if (!data) {
-      // Create demo data for testing
-      data = {
-        title: 'Demo Product',
-        price: '$99.99',
-        image: '/placeholder.svg?height=600&width=400',
-        description: 'This is a demo product for testing the quick-add functionality.',
-        colors: ['Black', 'White', 'Red'],
-        sizes: ['S', 'M', 'L', 'XL'],
-        variantId: '123456789',
-        variants: [
-          { id: '123456789', option1: 'Black', option2: 'S', available: true },
-          { id: '123456790', option1: 'Black', option2: 'M', available: true },
-          { id: '123456791', option1: 'White', option2: 'S', available: true },
-          { id: '123456792', option1: 'White', option2: 'M', available: true },
-        ],
+function openPopup(data = {
+  title: 'Demo Product',
+  price: '$99.99',
+  image: '/placeholder.svg?height=600&width=400',
+  description: 'This is a demo product for testing the quick-add functionality.',
+  colors: ['Black', 'White', 'Red'],
+  sizes: ['S', 'M', 'L', 'XL'],
+  variantId: '123456789',
+  variants: [
+    { id: '123456789', option1: 'Black', option2: 'S', available: true },
+    { id: '123456790', option1: 'Black', option2: 'M', available: true },
+    { id: '123456791', option1: 'White', option2: 'S', available: true },
+    { id: '123456792', option1: 'White', option2: 'M', available: true },
+  ],
+}) {
+  window.currentProductData = data;
+
+  if (data?.productUrl && (!data.variants || !data.variants.length)) {
+    setTimeout(() => {
+      const btn = document.querySelector('.add-to-cart-btn');
+      if (btn) { btn.disabled = true; btn.style.opacity = '0.6'; }
+    }, 100);
+    fetchProductData(data.productUrl, data);
+  }
+
+  const popup = document.getElementById('product-popup');
+  if (popup) {
+    popup.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+  }
+
+  populatePopupData(data);
+}
+
+function populatePopupData(data) {
+  const elements = {
+    title: document.getElementById('popup-product-title'),
+    price: document.getElementById('popup-product-price'),
+    image: document.getElementById('popup-product-image'),
+    description: document.getElementById('popup-product-description'),
+    colorContainer: document.getElementById('popup-color-options'),
+    sizeSelect: document.getElementById('popup-size-select')
+  };
+
+  if (elements.title) elements.title.textContent = data.title;
+  if (elements.price) elements.price.textContent = data.price;
+  if (elements.image) { elements.image.src = data.image; elements.image.alt = data.title; }
+  if (elements.description) elements.description.textContent = data.description;
+
+  if (elements.colorContainer && data.colors) {
+    elements.colorContainer.innerHTML = '';
+    data.colors.forEach((color, i) => {
+      const btn = document.createElement('button');
+      btn.className = `color-option ${i === 0 ? 'active' : ''}`;
+      btn.textContent = color;
+      btn.onclick = () => {
+        document.querySelectorAll('.color-option').forEach(opt => opt.classList.remove('active'));
+        btn.classList.add('active');
+        elements.colorContainer.classList.toggle('second-selected', i === 1);
       };
-  
-    }
-
-    // Store the product data globally so addToCart can access it
-    window.currentProductData = data;
-
-    // If we have a product URL but no variants, fetch the variants immediately
-    if (data && data.productUrl && (!data.variants || data.variants.length === 0)) {
-      // Disable add to cart button while loading variants
-      setTimeout(() => {
-        const addToCartBtn = document.querySelector('.add-to-cart-btn');
-        if (addToCartBtn) {
-          addToCartBtn.disabled = true;
-          addToCartBtn.style.opacity = '0.6';
-        }
-      }, 100);
-      
-      fetchProductData(data.productUrl, data);
-    }
-
-    const popup = document.getElementById('product-popup');
-    if (popup) {
-      popup.style.display = 'flex';
-      document.body.style.overflow = 'hidden';
-    }
-
-    const title = document.getElementById('popup-product-title');
-    if (title) {
-      title.textContent = data.title;
-    }
-
-    const price = document.getElementById('popup-product-price');
-    if (price) {
-      price.textContent = data.price;
-    }
-
-    const image = document.getElementById('popup-product-image');
-    if (image) {
-      image.src = data.image;
-      image.alt = data.title;
-    }
-
-    const description = document.getElementById('popup-product-description');
-    if (description) {
-      description.textContent = data.description;
-    }
-
-    const colorContainer = document.getElementById('popup-color-options');
-    if (colorContainer && data.colors) {
-      colorContainer.innerHTML = '';
-      data.colors.forEach((color, index) => {
-        const button = document.createElement('button');
-        button.className = `color-option ${index === 0 ? 'active' : ''}`;
-        button.textContent = color;
-        button.onclick = function () {
-          document.querySelectorAll('.color-option').forEach((opt) => opt.classList.remove('active'));
-          this.classList.add('active');
-          if (index === 1) {
-            colorContainer.classList.add('second-selected');
-          } else {
-            colorContainer.classList.remove('second-selected');
-          }
-        };
-        colorContainer.appendChild(button);
-      });
-    }
-
-    const sizeSelect = document.getElementById('popup-size-select');
-    if (sizeSelect && data.sizes) {
-      sizeSelect.innerHTML = '<option value="">Choose your size</option>';
-      data.sizes.forEach((size) => {
-        const option = document.createElement('option');
-        option.value = size;
-        option.textContent = size;
-        sizeSelect.appendChild(option);
-      });
-    }
+      elements.colorContainer.appendChild(btn);
+    });
   }
 
-  function populatePopupData(data) {
-  
-
-    const image = document.getElementById('popup-product-image');
-    if (image) {
-      image.src = data.image;
-      image.alt = data.title;
-    }
-
-    const title = document.getElementById('popup-product-title');
-    if (title) {
-      title.textContent = data.title;
-    }
-
-    const price = document.getElementById('popup-product-price');
-    if (price) {
-      price.textContent = data.price;
-    }
-
-    const description = document.getElementById('popup-product-description');
-    if (description) {
-      description.textContent = data.description;
-    }
-
-    const colorContainer = document.getElementById('popup-color-options');
-    if (colorContainer && data.colors) {
-      colorContainer.innerHTML = '';
-      data.colors.forEach((color, index) => {
-        const button = document.createElement('button');
-        button.className = `color-option ${index === 0 ? 'active' : ''}`;
-        button.textContent = color;
-        button.onclick = function () {
-          document.querySelectorAll('.color-option').forEach((opt) => opt.classList.remove('active'));
-          this.classList.add('active');
-          if (index === 1) {
-            colorContainer.classList.add('second-selected');
-          } else {
-            colorContainer.classList.remove('second-selected');
-          }
-        };
-        colorContainer.appendChild(button);
-      });
-    }
-
-    const sizeSelect = document.getElementById('popup-size-select');
-    if (sizeSelect && data.sizes) {
-      sizeSelect.innerHTML = '<option value="">Choose your size</option>';
-      data.sizes.forEach((size) => {
-        const option = document.createElement('option');
-        option.value = size;
-        option.textContent = size;
-        sizeSelect.appendChild(option);
-      });
-    }
+  if (elements.sizeSelect && data.sizes) {
+    elements.sizeSelect.innerHTML = '<option value="">Choose your size</option>';
+    data.sizes.forEach(size => {
+      const opt = document.createElement('option');
+      opt.value = opt.textContent = size;
+      elements.sizeSelect.appendChild(opt);
+    });
   }
+}
 
-  function closePopup() {
-    const popup = document.getElementById('product-popup');
-    if (popup) {
-      popup.style.display = 'none';
-      document.body.style.overflow = 'auto';
-    }
+function closePopup() {
+  const popup = document.getElementById('product-popup');
+  if (popup) {
+    popup.style.display = 'none';
+    document.body.style.overflow = 'auto';
   }
+}
 
-  function addToCart() {
-    // Validate that all required elements exist
-    const colorOption = document.querySelector('.color-option.active');
-    const sizeSelect = document.getElementById('popup-size-select');
-    const addToCartBtn = document.querySelector('.add-to-cart-btn');
+function addToCart() {
+  const colorOption = document.querySelector('.color-option.active');
+  const sizeSelect = document.getElementById('popup-size-select');
+  const addToCartBtn = document.querySelector('.add-to-cart-btn');
 
-    if (!colorOption) {
-      alert('Please select a color');
-      return;
-    }
+  if (!colorOption) return alert('Please select a color');
+  if (!sizeSelect) return alert('Size selection not available');
+  if (!addToCartBtn) return alert('Add to cart button not available');
 
-    if (!sizeSelect) {
-      alert('Size selection not available');
-      return;
-    }
-
-    if (!addToCartBtn) {
-      alert('Add to cart button not available');
-      return;
-    }
-
-      const selectedColor = colorOption.textContent;
+  const selectedColor = colorOption.textContent;
   const selectedSize = sizeSelect.value;
-  
-  // Debug: Show what user selected
-  console.log('User selected - Color:', selectedColor, 'Size:', selectedSize);
 
-    if (!selectedSize) {
-      alert('Please select a size');
-      return;
-    }
+  if (!selectedSize) return alert('Please select a size');
 
-    // Get the stored product data
-    const productData = window.currentProductData;
-    if (!productData) {
-      alert('Unable to add to cart. Please try again.');
-      return;
-    }
+  const productData = window.currentProductData;
+  if (!productData) return alert('Unable to add to cart. Please try again.');
 
-    // Find the variant ID based on selected options
-    let variantId = null;
-
-      // Check if we're still loading variants (only fallback colors/sizes and no real variants)
-  const isStillLoading = (!productData.variants || productData.variants.length === 0) && 
-                        productData.colors && 
-                        productData.colors.length === 2 && 
+  const isStillLoading = (!productData.variants || !productData.variants.length) && 
+                        productData.colors?.length === 2 && 
                         productData.colors[0] === 'Black' && 
                         productData.colors[1] === 'White';
   
-  if (isStillLoading) {
-    alert('Please wait for product options to load...');
-    return;
-  }
+  if (isStillLoading) return alert('Please wait for product options to load...');
+
+  let variantId = findVariantId(productData, selectedColor, selectedSize);
+  if (!variantId) return alert('Unable to add to cart. Please try again.');
+
+  const formData = new FormData();
+  formData.append('id', variantId);
+  formData.append('quantity', '1');
+
+  const originalText = addToCartBtn.innerHTML;
+  addToCartBtn.innerHTML = 'Adding...';
+  addToCartBtn.disabled = true;
+
+  fetch(Theme.routes.cart_add_url, {
+    method: 'POST',
+    body: formData,
+    headers: { Accept: 'application/json' }
+  })
+  .then(response => {
+    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+    return response.json();
+  })
+  .then(data => {
+    if (data.status) {
+      alert('Error adding to cart: ' + (data.message || 'Unknown error'));
+    } else {
+      document.dispatchEvent(new CustomEvent('cart:update', {
+        detail: {
+          resource: data,
+          sourceId: 'quick-add-modal',
+          data: {
+            didError: false,
+            source: 'quick-add-modal',
+            itemCount: 1,
+            productId: productData.productId || productData.id,
+            variantId
+          }
+        },
+        bubbles: true
+      }));
+      alert('Added to cart!');
+      closePopup();
+    }
+  })
+  .catch(error => {
+    const statusErrors = {
+      '422': 'This item cannot be added to cart. It may be out of stock or unavailable.',
+      '400': 'Invalid request. Please try again.',
+      '500': 'Server error. Please try again later.'
+    };
+    const statusCode = error.message.match(/status: (\d{3})/)?.[1];
+    alert(statusErrors[statusCode] || 'Error adding to cart. Please try again.');
+  })
+  .finally(() => {
+    addToCartBtn.innerHTML = originalText;
+    addToCartBtn.disabled = false;
+  });
+}
+
+function findVariantId(productData, selectedColor, selectedSize) {
+  if (!productData.variants?.length) return productData.variantId;
+
+  const commonColors = ['black', 'white', 'red', 'blue', 'green', 'yellow', 'pink', 'gray', 'grey', 'brown', 'purple', 'orange'];
+  const commonSizes = ['xs', 's', 'm', 'l', 'xl', 'xxl', 'small', 'medium', 'large', 'extra small', 'extra large'];
   
-  // Always prioritize variants array if available - don't use fallback variantId if we have real variants
-  if (productData.variants && productData.variants.length > 0) {
-      // Try to find the variant based on selected options
-      let variant = null;
+  const sample = productData.variants[0];
+  let colorKey = null, sizeKey = null;
 
-      // First determine which options contain colors and sizes
-      const sampleVariant = productData.variants[0];
-      let colorOptionKey = null;
-      let sizeOptionKey = null;
-
-      // Common color values to help identify color options
-      const commonColors = [
-        'black',
-        'white',
-        'red',
-        'blue',
-        'green',
-        'yellow',
-        'pink',
-        'gray',
-        'grey',
-        'brown',
-        'purple',
-        'orange',
-      ];
-      // Common size values to help identify size options
-      const commonSizes = ['xs', 's', 'm', 'l', 'xl', 'xxl', 'small', 'medium', 'large', 'extra small', 'extra large'];
-
-      // Check which option position contains colors vs sizes
-      ['option1', 'option2', 'option3'].forEach((optionKey) => {
-        if (sampleVariant[optionKey]) {
-          const optionValue = sampleVariant[optionKey].toLowerCase();
-          if (commonColors.includes(optionValue) && !colorOptionKey) {
-            colorOptionKey = optionKey;
-          } else if (commonSizes.includes(optionValue) && !sizeOptionKey) {
-            sizeOptionKey = optionKey;
-          }
-        }
-      });
-
-      // If we couldn't auto-detect, assume standard Shopify convention: option1=color, option2=size
-      if (!colorOptionKey && !sizeOptionKey) {
-        colorOptionKey = 'option1';
-        sizeOptionKey = 'option2';
-      } else if (!colorOptionKey) {
-        colorOptionKey = sizeOptionKey === 'option1' ? 'option2' : 'option1';
-      } else if (!sizeOptionKey) {
-        sizeOptionKey = colorOptionKey === 'option1' ? 'option2' : 'option1';
-      }
-
-      // Find exact match based on detected option mapping
-      variant = productData.variants.find((v) => {
-        const colorMatch =
-          !selectedColor ||
-          (colorOptionKey && v[colorOptionKey] && v[colorOptionKey].toLowerCase() === selectedColor.toLowerCase());
-        const sizeMatch =
-          !selectedSize ||
-          (sizeOptionKey && v[sizeOptionKey] && v[sizeOptionKey].toLowerCase() === selectedSize.toLowerCase());
-        const isAvailable = v.available !== false;
-        return colorMatch && sizeMatch && isAvailable;
-      });
-
-      if (variant) {
-        variantId = variant.id;
-      } else {
-        // If exact match failed, try to find by color first (if size not selected or not found)
-        if (selectedColor && !selectedSize) {
-          variant = productData.variants.find((v) => {
-            const colorMatch =
-              colorOptionKey && v[colorOptionKey] && v[colorOptionKey].toLowerCase() === selectedColor.toLowerCase();
-            const isAvailable = v.available !== false;
-            return colorMatch && isAvailable;
-          });
-        }
-
-        // If still no match, try to find by size first (if color not selected or not found)
-        if (!variant && selectedSize && !selectedColor) {
-          variant = productData.variants.find((v) => {
-            const sizeMatch =
-              sizeOptionKey && v[sizeOptionKey] && v[sizeOptionKey].toLowerCase() === selectedSize.toLowerCase();
-            const isAvailable = v.available !== false;
-            return sizeMatch && isAvailable;
-          });
-        }
-
-        if (variant) {
-          variantId = variant.id;
-        } else {
-          // Final fallback: use the first available variant
-          const firstAvailableVariant = productData.variants.find((v) => v.available !== false);
-          if (firstAvailableVariant) {
-            variantId = firstAvailableVariant.id;
-          }
-        }
-      }
-    } else if (productData.variantId) {
-      // Fallback to stored variant ID if no variants array available
-      variantId = productData.variantId;
-    }
-
-    if (!variantId) {
-      alert('Unable to add to cart. Please try again.');
-      return;
-    }
-
-    // Create form data for the cart add request
-    const formData = new FormData();
-    formData.append('id', variantId);
-    formData.append('quantity', '1');
-
-    // Show loading state
-    const originalText = addToCartBtn.innerHTML;
-    addToCartBtn.innerHTML = 'Adding...';
-    addToCartBtn.disabled = true;
-
-    // Make the actual cart add request
-    fetch(Theme.routes.cart_add_url, {
-      method: 'POST',
-      body: formData,
-      headers: {
-        Accept: 'application/json',
-      },
-    })
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        return response.json();
-      })
-      .then((data) => {
-                if (data.status) {
-          // Error occurred
-          alert('Error adding to cart: ' + (data.message || 'Unknown error'));
-        } else {
-          // Success - item added to cart
-
-          // Dispatch cart update event to update cart icon and other components
-          const cartAddEvent = new CustomEvent('cart:update', {
-            detail: {
-              resource: data,
-              sourceId: 'quick-add-modal',
-              data: {
-                didError: false,
-                source: 'quick-add-modal',
-                itemCount: 1,
-                productId: productData.productId || productData.id,
-                variantId: variantId,
-              },
-            },
-            bubbles: true,
-          });
-          document.dispatchEvent(cartAddEvent);
-
-          // Show success message
-          alert('Added to cart!');
-          closePopup();
-        }
-      })
-      .catch((error) => {
-
-        // Provide more specific error messages
-        if (error.message.includes('HTTP error! status: 422')) {
-          alert('This item cannot be added to cart. It may be out of stock or unavailable.');
-        } else if (error.message.includes('HTTP error! status: 400')) {
-          alert('Invalid request. Please try again.');
-        } else if (error.message.includes('HTTP error! status: 500')) {
-          alert('Server error. Please try again later.');
-        } else {
-          alert('Error adding to cart. Please try again.');
-        }
-      })
-      .finally(() => {
-        // Restore button state
-        addToCartBtn.innerHTML = originalText;
-        addToCartBtn.disabled = false;
-      });
-  }
-
-  // Function to test cart functionality
-  function testCart() {
-    // Check if we can access the cart
-    fetch(Theme.routes.cart_url + '.js')
-      .then((response) => response.json())
-      .then((data) => {
-        alert('Cart contains ' + data.item_count + ' items');
-      })
-      .catch((error) => {
-        alert('Error accessing cart');
-      });
-  }
-
-  // Add test function to window for debugging
-  window.testCart = testCart;
-
-  document.addEventListener('DOMContentLoaded', function () {
-    const popupOverlay = document.getElementById('product-popup');
-    if (popupOverlay) {
-      popupOverlay.addEventListener('click', function (e) {
-        if (e.target === this) {
-          closePopup();
-        }
-      });
-    }
-
-    // Handle size dropdown arrow rotation
-    const sizeSelect = document.getElementById('popup-size-select');
-    const dropdownArrow = document.querySelector('.dropdown-arrow');
-
-    if (sizeSelect && dropdownArrow) {
-      // When dropdown is opened/focused - arrow points up
-      sizeSelect.addEventListener('focus', function () {
-        dropdownArrow.classList.add('rotated');
-      });
-
-      // When dropdown is closed/blurred - arrow points down
-      sizeSelect.addEventListener('blur', function () {
-        dropdownArrow.classList.remove('rotated');
-      });
-
-      // When dropdown is clicked - arrow points up
-      sizeSelect.addEventListener('mousedown', function () {
-        dropdownArrow.classList.add('rotated');
-      });
-
-      // When dropdown loses focus - arrow points down
-      sizeSelect.addEventListener('change', function () {
-        setTimeout(() => {
-          dropdownArrow.classList.remove('rotated');
-        }, 100);
-      });
+  ['option1', 'option2', 'option3'].forEach(key => {
+    if (sample[key]) {
+      const val = sample[key].toLowerCase();
+      if (commonColors.includes(val) && !colorKey) colorKey = key;
+      else if (commonSizes.includes(val) && !sizeKey) sizeKey = key;
     }
   });
 
-  document.addEventListener('click', function (e) {
-    const button = e.target.closest('button, a');
-    if (button && (button.textContent.includes('+') || button.classList.contains('quick-add'))) {
-  
+  if (!colorKey && !sizeKey) { colorKey = 'option1'; sizeKey = 'option2'; }
+  else if (!colorKey) colorKey = sizeKey === 'option1' ? 'option2' : 'option1';
+  else if (!sizeKey) sizeKey = colorKey === 'option1' ? 'option2' : 'option1';
 
-      const productContainer = button.closest('.product-item, .product-card, .grid-product, .product, [data-product]');
-
-      let productData = null;
-
-      if (productContainer) {
-        const title = productContainer.querySelector('.product-title, .product-name, h3, h2')?.textContent?.trim();
-        const price = productContainer.querySelector('.price, .product-price, .money')?.textContent?.trim();
-        const image = productContainer.querySelector('img')?.src;
-
-        // Try to get the product ID from data attributes
-        const productId =
-          productContainer.dataset.productId ||
-          productContainer.querySelector('[data-product-id]')?.dataset.productId ||
-          productContainer.id?.replace('product-card-', '');
-
-        // Try to get variant information
-        let variantId = null;
-        let variants = [];
-
-        // Check if there's a variant picker with selected variant
-        const variantPicker = productContainer.querySelector('variant-picker');
-
-        if (variantPicker) {
-          const selectedVariant = variantPicker.querySelector('input[type="radio"]:checked');
-          if (selectedVariant) {
-            variantId = selectedVariant.dataset.variantId;
-          }
-
-          // Get all available variants
-          const variantInputs = variantPicker.querySelectorAll('input[data-variant-id]');
-          variants = Array.from(variantInputs).map((input) => ({
-            id: input.dataset.variantId,
-            option1: input.dataset.option1 || input.value,
-            option2: input.dataset.option2 || '',
-            option3: input.dataset.option3 || '',
-            available: input.dataset.optionAvailable !== 'false' && !input.disabled,
-          }));
-  
-        }
-
-        // Check for product form with variant ID
-        const productForm = productContainer.querySelector('form[data-type="add-to-cart-form"]');
-        if (productForm && !variantId) {
-          const variantInput = productForm.querySelector('input[name="id"]');
-          if (variantInput) {
-            variantId = variantInput.value;
-          }
-        }
-
-        // Check for JSON script with variant data
-        const variantScript = productContainer.querySelector('script[type="application/json"]');
-        if (variantScript && !variantId) {
-          try {
-            const variantData = JSON.parse(variantScript.textContent);
-            if (variantData && variantData.id) {
-              variantId = variantData.id;
-            }
-          } catch (e) {
-            console.warn('Could not parse variant JSON:', e);
-          }
-        }
-
-        // Try to get product URL to fetch more data if needed
-        const productLink = productContainer.querySelector('a[href*="/products/"]');
-        const productUrl = productLink?.href;
-
-        if (title || price) {
-          productData = {
-            id: productId,
-            title: title || 'Product Name',
-            price: price || 'Price not available',
-            image: image || '/placeholder.svg?height=600&width=400',
-            description: 'This product is crafted with premium materials and attention to detail.',
-            colors: ['Black', 'White'], // Fallback colors, will be updated with real colors
-            sizes: ['XS', 'S', 'M', 'L', 'XL'], // Fallback sizes, will be updated with real sizes
-            variantId: variantId,
-            variants: variants,
-            productUrl: productUrl,
-          };
-
-          
-
-          // If we don't have proper variants data, fetch it from the product URL
-          if ((!variants || variants.length === 0) && productUrl) {
-
-            fetchProductData(productUrl, productData);
-          }
-        }
-      }
-
-      e.preventDefault();
-      openPopup(productData);
-    }
+  let variant = productData.variants.find(v => {
+    const colorMatch = !selectedColor || (colorKey && v[colorKey]?.toLowerCase() === selectedColor.toLowerCase());
+    const sizeMatch = !selectedSize || (sizeKey && v[sizeKey]?.toLowerCase() === selectedSize.toLowerCase());
+    return colorMatch && sizeMatch && v.available !== false;
   });
 
-  // Function to fetch additional product data if needed
-  async function fetchProductData(productUrl, baseProductData) {
-    try {
-          // Add .js to get JSON response
-    const jsonUrl = productUrl.split('?')[0] + '.js'; // Remove variant parameter from URL
-
-      const response = await fetch(jsonUrl);
-      const productJson = await response.json();
-
-          if (productJson && productJson.variants) {
-      // Update the stored product data with real variant information
-      if (window.currentProductData && window.currentProductData.id == baseProductData.id) {
-        window.currentProductData.variants = productJson.variants;
-        // Don't override variantId here - let the user selection determine it
-
-          // Update the popup with real variant options
-          updatePopupWithVariants(productJson.variants);
-        }
-      }
-    } catch (error) {
-      console.error('Could not fetch product data:', error);
-    }
+  if (!variant) {
+    variant = productData.variants.find(v => v.available !== false);
   }
 
-  // Function to update popup with real variant options
-function updatePopupWithVariants(variants) {
-  if (!variants || variants.length === 0) return;
+  return variant?.id;
+}
 
-    // Determine which options contain colors and sizes (same logic as addToCart function)
-    const sampleVariant = variants[0];
-    let colorOptionKey = null;
-    let sizeOptionKey = null;
+function testCart() {
+  fetch(Theme.routes.cart_url + '.js')
+    .then(response => response.json())
+    .then(data => alert('Cart contains ' + data.item_count + ' items'))
+    .catch(() => alert('Error accessing cart'));
+}
 
-    // Common color and size values to help identify option types
-    const commonColors = [
-      'black',
-      'white',
-      'red',
-      'blue',
-      'green',
-      'yellow',
-      'pink',
-      'gray',
-      'grey',
-      'brown',
-      'purple',
-      'orange',
-    ];
-    const commonSizes = ['xs', 's', 'm', 'l', 'xl', 'xxl', 'small', 'medium', 'large', 'extra small', 'extra large'];
+window.testCart = testCart;
 
-    // Check which option position contains colors vs sizes
-    ['option1', 'option2', 'option3'].forEach((optionKey) => {
-      if (sampleVariant[optionKey]) {
-        const optionValue = sampleVariant[optionKey].toLowerCase();
-        if (commonColors.includes(optionValue) && !colorOptionKey) {
-          colorOptionKey = optionKey;
-        } else if (commonSizes.includes(optionValue) && !sizeOptionKey) {
-          sizeOptionKey = optionKey;
-        }
-      }
+document.addEventListener('DOMContentLoaded', () => {
+  const popup = document.getElementById('product-popup');
+  if (popup) {
+    popup.addEventListener('click', e => {
+      if (e.target === popup) closePopup();
     });
+  }
 
-    // If we couldn't auto-detect, assume standard Shopify convention: option1=color, option2=size
-    if (!colorOptionKey && !sizeOptionKey) {
-      colorOptionKey = 'option1';
-      sizeOptionKey = 'option2';
-    } else if (!colorOptionKey) {
-      colorOptionKey = sizeOptionKey === 'option1' ? 'option2' : 'option1';
-    } else if (!sizeOptionKey) {
-      sizeOptionKey = colorOptionKey === 'option1' ? 'option2' : 'option1';
+  const sizeSelect = document.getElementById('popup-size-select');
+  const arrow = document.querySelector('.dropdown-arrow');
+  
+  if (sizeSelect && arrow) {
+    sizeSelect.addEventListener('focus', () => arrow.classList.add('rotated'));
+    sizeSelect.addEventListener('blur', () => arrow.classList.remove('rotated'));
+    sizeSelect.addEventListener('mousedown', () => arrow.classList.add('rotated'));
+    sizeSelect.addEventListener('change', () => setTimeout(() => arrow.classList.remove('rotated'), 100));
+  }
+});
+
+document.addEventListener('click', e => {
+  const button = e.target.closest('button, a');
+  if (!button || (!button.textContent.includes('+') && !button.classList.contains('quick-add'))) return;
+
+  const container = button.closest('.product-item, .product-card, .grid-product, .product, [data-product]');
+  if (!container) return;
+
+  const title = container.querySelector('.product-title, .product-name, h3, h2')?.textContent?.trim();
+  const price = container.querySelector('.price, .product-price, .money')?.textContent?.trim();
+  const image = container.querySelector('img')?.src;
+  
+  const productId = container.dataset.productId || 
+                   container.querySelector('[data-product-id]')?.dataset.productId || 
+                   container.id?.replace('product-card-', '');
+
+  let variantId = null;
+  let variants = [];
+
+  const variantPicker = container.querySelector('variant-picker');
+  if (variantPicker) {
+    const selected = variantPicker.querySelector('input[type="radio"]:checked');
+    if (selected) variantId = selected.dataset.variantId;
+
+    variants = Array.from(variantPicker.querySelectorAll('input[data-variant-id]')).map(input => ({
+      id: input.dataset.variantId,
+      option1: input.dataset.option1 || input.value,
+      option2: input.dataset.option2 || '',
+      option3: input.dataset.option3 || '',
+      available: input.dataset.optionAvailable !== 'false' && !input.disabled
+    }));
+  }
+
+  const form = container.querySelector('form[data-type="add-to-cart-form"]');
+  if (form && !variantId) {
+    const input = form.querySelector('input[name="id"]');
+    if (input) variantId = input.value;
+  }
+
+  const script = container.querySelector('script[type="application/json"]');
+  if (script && !variantId) {
+    try {
+      const data = JSON.parse(script.textContent);
+      if (data?.id) variantId = data.id;
+    } catch (e) { console.warn('Could not parse variant JSON:', e); }
+  }
+
+  const productLink = container.querySelector('a[href*="/products/"]');
+  const productUrl = productLink?.href;
+
+  if (title || price) {
+    const productData = {
+      id: productId,
+      title: title || 'Product Name',
+      price: price || 'Price not available',
+      image: image || '/placeholder.svg?height=600&width=400',
+      description: 'This product is crafted with premium materials and attention to detail.',
+      colors: ['Black', 'White'],
+      sizes: ['XS', 'S', 'M', 'L', 'XL'],
+      variantId,
+      variants,
+      productUrl
+    };
+
+    if ((!variants.length) && productUrl) fetchProductData(productUrl, productData);
+    
+    e.preventDefault();
+    openPopup(productData);
+  }
+});
+
+async function fetchProductData(productUrl, baseProductData) {
+  try {
+    const response = await fetch(productUrl.split('?')[0] + '.js');
+    const productJson = await response.json();
+
+    if (productJson?.variants && window.currentProductData?.id == baseProductData.id) {
+      window.currentProductData.variants = productJson.variants;
+      updatePopupWithVariants(productJson.variants);
     }
+  } catch (error) {
+    console.error('Could not fetch product data:', error);
+  }
+}
 
-      // Extract unique option values based on detected mapping
-  const colorValues = [...new Set(variants.map((v) => v[colorOptionKey]).filter(Boolean))];
-  const sizeValues = [...new Set(variants.map((v) => v[sizeOptionKey]).filter(Boolean))];
+function updatePopupWithVariants(variants) {
+  if (!variants?.length) return;
 
-  // Update the stored product data with real colors and sizes
+  const commonColors = ['black', 'white', 'red', 'blue', 'green', 'yellow', 'pink', 'gray', 'grey', 'brown', 'purple', 'orange'];
+  const commonSizes = ['xs', 's', 'm', 'l', 'xl', 'xxl', 'small', 'medium', 'large', 'extra small', 'extra large'];
+  
+  const sample = variants[0];
+  let colorKey = null, sizeKey = null;
+
+  ['option1', 'option2', 'option3'].forEach(key => {
+    if (sample[key]) {
+      const val = sample[key].toLowerCase();
+      if (commonColors.includes(val) && !colorKey) colorKey = key;
+      else if (commonSizes.includes(val) && !sizeKey) sizeKey = key;
+    }
+  });
+
+  if (!colorKey && !sizeKey) { colorKey = 'option1'; sizeKey = 'option2'; }
+  else if (!colorKey) colorKey = sizeKey === 'option1' ? 'option2' : 'option1';
+  else if (!sizeKey) sizeKey = colorKey === 'option1' ? 'option2' : 'option1';
+
+  const colorValues = [...new Set(variants.map(v => v[colorKey]).filter(Boolean))];
+  const sizeValues = [...new Set(variants.map(v => v[sizeKey]).filter(Boolean))];
+
   if (window.currentProductData) {
     window.currentProductData.colors = colorValues;
     window.currentProductData.sizes = sizeValues;
   }
-  
-  // Enable add to cart button now that real variants are loaded
+
   const addToCartBtn = document.querySelector('.add-to-cart-btn');
   if (addToCartBtn) {
     addToCartBtn.disabled = false;
     addToCartBtn.style.opacity = '1';
   }
 
-  // Update color options
-    if (colorValues.length > 0) {
-      const colorContainer = document.getElementById('popup-color-options');
-      if (colorContainer) {
-        colorContainer.innerHTML = '';
-        colorValues.forEach((color, index) => {
-          const button = document.createElement('button');
-          button.className = `color-option ${index === 0 ? 'active' : ''}`;
-          button.textContent = color;
-          button.onclick = function () {
-            document.querySelectorAll('.color-option').forEach((opt) => opt.classList.remove('active'));
-            this.classList.add('active');
-            if (index === 1) {
-              colorContainer.classList.add('second-selected');
-            } else {
-              colorContainer.classList.remove('second-selected');
-            }
-          };
-          colorContainer.appendChild(button);
-        });
-      }
-    }
-
-    // Update size options
-    if (sizeValues.length > 0) {
-      const sizeSelect = document.getElementById('popup-size-select');
-      if (sizeSelect) {
-        sizeSelect.innerHTML = '<option value="">Choose your size</option>';
-        sizeValues.forEach((size) => {
-          const option = document.createElement('option');
-          option.value = size;
-          option.textContent = size;
-          sizeSelect.appendChild(option);
-        });
-      }
+  if (colorValues.length) {
+    const colorContainer = document.getElementById('popup-color-options');
+    if (colorContainer) {
+      colorContainer.innerHTML = '';
+      colorValues.forEach((color, i) => {
+        const btn = document.createElement('button');
+        btn.className = `color-option ${i === 0 ? 'active' : ''}`;
+        btn.textContent = color;
+        btn.onclick = () => {
+          document.querySelectorAll('.color-option').forEach(opt => opt.classList.remove('active'));
+          btn.classList.add('active');
+          colorContainer.classList.toggle('second-selected', i === 1);
+        };
+        colorContainer.appendChild(btn);
+      });
     }
   }
+
+  if (sizeValues.length) {
+    const sizeSelect = document.getElementById('popup-size-select');
+    if (sizeSelect) {
+      sizeSelect.innerHTML = '<option value="">Choose your size</option>';
+      sizeValues.forEach(size => {
+        const opt = document.createElement('option');
+        opt.value = opt.textContent = size;
+        sizeSelect.appendChild(opt);
+      });
+    }
+  }
+}
 </script>
