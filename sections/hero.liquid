@@ -75,113 +75,283 @@
 </div>
 
 <style>
-  .gift-guide-template {
-    font-family: 'Jost', sans-serif;
-    background-color: white;
-  }
+/* Import Jost font */
+@import url('https://fonts.googleapis.com/css2?family=Jost:wght@300;400;500;600;700&display=swap');
 
-  .page-width {
-    max-width: 1400px;
-    margin: 0 auto;
-    padding: 0 30px;
-  }
+.gift-guide-template {
+  font-family: 'Jost', sans-serif;
+  background-color: white;
+}
 
-  /* Full-width Image */
-  .full-width-image img {
-    width: 100%;
-    height: auto;
-    display: block;
-  }
+.page-width {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 30px;
+}
 
-  /* 50/50 Grid Layout */
-  .two-column-grid {
-    display: flex;
-    padding: 40px 0 30px;
-    align-items: center;
-  }
+/* Full-width Image */
+.full-width-image img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
 
-  .grid-column {
-    width: 50%;
-  }
+/* 50/50 Grid Layout */
+.two-column-grid {
+  display: flex;
+  padding: 40px 0 30px;
+  align-items: center;
+}
 
-  .text-column {
-    padding-right: 80px;
-    margin-bottom: 70px;
-    margin-right: 60px;
-  }
+.grid-column {
+  width: 50%;
+}
 
-  .image-column img.desktop-image {
-    width: 120%;
-    height: auto;
-    display: block;
-    transform: scale(1.2);
-    transform-origin: center;
-  }
-  
-  /* Mobile content styling - initially hidden */
-  .mobile-content {
-    display: none;
-    position: relative;
-  }
-  
-  .image-column img.mobile-image {
-    display: none;
-    width: 100%;
-  }
+.text-column {
+  padding-right: 80px;
+  margin-bottom: 70px;
+  margin-right: 60px;
+}
 
-  /* Text Column Styles */
+.image-column img.desktop-image {
+  width: 120%;
+  height: auto;
+  display: block;
+  transform: scale(1.2);
+  transform-origin: center;
+}
+
+/* Mobile content styling - initially hidden */
+.mobile-content {
+  display: none;
+  position: relative;
+}
+
+.image-column img.mobile-image {
+  display: none;
+  width: 100%;
+}
+
+/* Text Column Styles */
+.main-title {
+  font-size: 70px;
+  line-height: 100%;
+  letter-spacing: 0px;
+  margin-top: 0;
+  margin-bottom: 30px;
+  font-weight: 500;
+  color: {{ section.settings.heading_color }};
+}
+
+.description {
+  font-size: 20px;
+  line-height: 140%;
+  font-weight: 400;
+  margin-bottom: 40px;
+  letter-spacing: 0px;
+  color: {{ section.settings.text_color }};
+}
+
+/* Mobile description - initially hidden */
+.mobile-description {
+  display: none;
+  font-size: 20px;
+  line-height: 140%;
+  margin-left: 40px;
+  font-weight: 400;
+  margin-bottom: 20px;
+  letter-spacing: 0px;
+  color: {{ section.settings.text_color }};
+}
+
+/* Button Styles */
+.cta-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  background-color: #000;
+  color: #fff;
+  padding: 10px 40px;
+  text-decoration: none;
+  font-weight: 400;
+  font-size: 16px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  white-space: nowrap;
+  position: relative;
+  overflow: hidden;
+  z-index: 1;
+}
+
+.cta-button:before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 0;
+  height: 100%;
+  background-color: #f7e84c;
+  transition: width 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  z-index: -1;
+}
+
+.cta-button:hover:before {
+  width: 100%;
+}
+
+.cta-button:hover {
+  color: #000;
+  transform: translateX(5px);
+}
+
+.arrow-icon {
+  width: 20px;
+  height: 20px;
+  transition: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  stroke: #fff;
+  position: relative;
+  z-index: 2;
+}
+
+.cta-button:hover .arrow-icon {
+  transform: translateX(5px);
+  stroke: #000;
+}
+
+/* Footer Banner */
+.footer-banner {
+  background-color: {{ section.settings.bg_color }};
+  padding: 15px 0;
+  text-align: center;
+  margin-top: 6px;
+}
+
+.footer-banner p {
+  margin: 0;
+  font-size: 16px;
+  text-transform: uppercase;
+  letter-spacing: 0px;
+  font-weight: 400;
+  color: {{ section.settings.footer_text_color }};
+}
+
+/* Hide mobile footer text by default */
+.mobile-footer-text {
+  display: none;
+}
+
+/* Responsive Styles */
+@media screen and (max-width: 989px) {
   .main-title {
-    font-size: 70px;
-    line-height: 100%;
-    letter-spacing:0px;
-    margin-top: 0;
-    margin-bottom: 30px;
-    font-weight: 500;
-    color: {{ section.settings.heading_color }};
+    font-size: 3.5rem;
   }
 
   .description {
-    font-size: 20px;
-    line-height: 140%;
-    font-weight: 400;
-    margin-bottom: 40px;
-    letter-spacing: 0px;
-    color: {{ section.settings.text_color }};
+    font-size: 1.2rem;
   }
 
-  /* Mobile description - initially hidden */
-  .mobile-description {
+  .text-column {
+    padding-right: 30px;
+    margin-right: 0;
+  }
+}
+
+@media screen and (max-width: 749px) {
+  .gift-guide-template {
+    background-color: #ffffff;
+  }
+  
+  .full-width-image {
     display: none;
-    font-size: 20px;
-    line-height: 140%;
-    margin-left:40px;
-    font-weight: 400;
-    margin-bottom: 20px;
-    letter-spacing: 0px;
-    color: {{ section.settings.text_color }};
   }
 
-  /* Button Styles */
-  .cta-button {
+  .two-column-grid {
+    flex-direction: column;
+    padding: 20px 0 10px;
+  }
+
+  .grid-column {
+    width: 100%;
+  }
+
+  .text-column {
+    margin-right: 50px;
+    order: 0;
+    padding-right: 0;
+    text-align: center;
+    margin-bottom: 15px;
+  }
+  
+  /* Show mobile description and hide desktop description */
+  .mobile-description {
+    display: block;
+    font-size: 1.5rem;
+    margin-bottom: 15px;
+    margin-left: 40px;
+  }
+  
+  .desktop-description {
+    display: none;
+  }
+  
+  .image-column {
+    order: 1;
+    margin: 0;
+    padding: 0;
+  }
+  
+  /* Mobile image display */
+  .image-column img.desktop-image {
+    display: none;
+  }
+  
+  .mobile-content {
+    display: block;
+    width: 100%;
+  }
+  
+  .image-column img.mobile-image {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    height: auto;
+    transform: none;
+  }
+  
+  /* Mobile centered button */
+  .desktop-only-button {
+    display: none;
+  }
+  
+  .mobile-centered-button {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
     display: inline-flex;
     align-items: center;
-    gap: 12px;
+    gap: 10px;
     background-color: #000;
     color: #fff;
-    padding: 10px 40px;
+    padding: 10px 30px;
     text-decoration: none;
     font-weight: 400;
-    font-size: 16px;
-    letter-spacing: 0.5px;
+    font-size: 15px;
+    letter-spacing: 1.5px;
     text-transform: uppercase;
-    transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    transition: all 0.3s ease;
+    z-index: 2;
+    border-radius: 0px;
+    min-width: 160px;
+    box-sizing: border-box;
     white-space: nowrap;
-    position: relative;
-    overflow: hidden;
-    z-index: 1;
+    max-width: 90%;
+    margin: 0 auto;
+    margin-top: 55px;
   }
-
-  .cta-button:before {
+  
+  .mobile-centered-button:before {
     content: "";
     position: absolute;
     top: 0;
@@ -189,277 +359,107 @@
     width: 0;
     height: 100%;
     background-color: #f7e84c;
-    transition: width 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    transition: width 0.3s ease;
     z-index: -1;
   }
-
-  .cta-button:hover:before {
+  
+  .mobile-centered-button:hover:before {
     width: 100%;
   }
-
-  .cta-button:hover {
+  
+  .mobile-centered-button:hover {
     color: #000;
-    transform: translateX(5px);
   }
-
-  .arrow-icon {
-    width: 20px;
-    height: 20px;
-    transition: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-    stroke: #fff;
-    position: relative;
-    z-index: 2;
+  
+  .mobile-centered-button .arrow-icon {
+    width: 18px;
+    height: 18px;
+    transition: transform 0.3s ease;
   }
-
-  .cta-button:hover .arrow-icon {
-    transform: translateX(5px);
+  
+  .mobile-centered-button:hover .arrow-icon {
+    transform: translateX(3px);
     stroke: #000;
   }
-
-  /* Footer Banner */
+  
+  /* Mobile text styling */
+  .main-title {
+    font-size: 3rem;
+    line-height: 1.1;
+    margin-bottom: 12px;
+    font-weight: 600;
+  }
+  
+  /* Footer styling */
   .footer-banner {
-    background-color: {{ section.settings.bg_color }};
+    margin-top: 0;
+    background-color: #f9f9f9;
+    font-size: 6px;
     padding: 15px 0;
-    text-align: center;
-    margin-top: 6px;
+  }
+  
+  .desktop-footer-text {
+    display: none;
+  }
+  
+  .mobile-footer-text {
+    display: block;
+    font-size: 6px;
+    padding: 0 15px;
+    letter-spacing: 0.5px;
+  }
+}
+
+/* Extra Small Mobile Devices (under 470px) */
+@media screen and (max-width: 470px) {
+  .mobile-centered-button {
+    padding: 8px 20px;
+    font-weight: 300;
+    line-height: 20.48px;
+    font-size: 15px;
+    min-width: 120px;
+    margin-right: 10px;
+  }
+
+  .mobile-centered-button .arrow-icon {
+    width: 24px;
+    height: 24px;
+  }
+
+  .main-title {
+    font-family: 'Jost', sans-serif;
+    font-weight: 500;
+    line-height: 100%;
+    font-size: 30px;
+    margin-bottom: 20px;
+    margin-left: 25px;
+  }
+
+  .mobile-description {
+    font-family: 'Jost', sans-serif;
+    font-size: 17px;
+    line-height: 130%;
+    margin-bottom: 10px;
+    margin-left: 40px;
+  }
+
+  .mobile-content {
+    min-height: 200px;
+  }
+
+  .mobile-centered-button {
+    transform: translate(-50%, -50%) scale(0.9);
   }
 
   .footer-banner p {
-    margin: 0;
-    font-size: 16px;
+    font-weight: 400;
+    font-size: 12.5px;
     text-transform: uppercase;
     letter-spacing: 0px;
-    font-weight: 400;
     color: {{ section.settings.footer_text_color }};
   }
+}
 
-  /* Hide mobile footer text by default */
-  .mobile-footer-text {
-    display: none;
-  }
-
-  /* Responsive Styles */
-  @media screen and (max-width: 989px) {
-    .main-title {
-      font-size: 3.5rem;
-    }
-
-    .description {
-      font-size: 1.2rem;
-    }
-
-    .text-column {
-      padding-right: 30px;
-      margin-right: 0;
-    }
-  }
-
-  @media screen and (max-width: 749px) {
-    .gift-guide-template {
-      background-color: #ffffff;
-    }
-    
-    .full-width-image {
-      display: none;
-    }
-
-    .two-column-grid {
-      flex-direction: column;
-      padding: 20px 0 10px;
-    }
-
-    .grid-column {
-      width: 100%;
-    }
-
-    .text-column {
-      {% comment %} background-color:red; {% endcomment %}
-      margin-right:50px;
-      order: 0;
-      padding-right: 0;
-      {% comment %} margin-right: 0; {% endcomment %}
-      text-align: center;
-      margin-bottom: 15px;
-    }
-    
-
-    /* Show mobile description and hide desktop description */
-    .mobile-description {
-      display: block;
-      font-size: 1.5rem;
-      margin-bottom: 15px;
-      margin-left: 40px;
-    }
-    
-    .desktop-description {
-      display: none;
-    }
-    
-    .image-column {
-      order: 1;
-      margin: 0;
-      padding: 0;
-    }
-    
-    /* Mobile image display */
-    .image-column img.desktop-image {
-      display: none;
-    }
-    
-    .mobile-content {
-      display: block;
-      width: 100%;
-    }
-    
-    .image-column img.mobile-image {
-      display: block;
-      width: 100%;
-      max-width: 100%;
-      height: auto;
-      transform: none;
-    }
-    
-    /* Mobile centered button */
-    .desktop-only-button {
-      display: none;
-    }
-    
-    .mobile-centered-button {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
-      background-color: #000;
-      color: #fff;
-      padding: 10px 30px;
-      text-decoration: none;
-      font-weight: 400;
-      font-size: 15px;
-      letter-spacing: 1.5px;
-      text-transform: uppercase;
-      transition: all 0.3s ease;
-      z-index: 2;
-      border-radius: 0px;
-      min-width: 160px;
-      box-sizing: border-box;
-      white-space: nowrap;
-      max-width: 90%;
-      margin: 0 auto;
-      margin-top:55px;
-    }
-    
-    .mobile-centered-button:before {
-      content: "";
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 0;
-      height: 100%;
-      background-color: #f7e84c;
-      transition: width 0.3s ease;
-      z-index: -1;
-    }
-    
-    .mobile-centered-button:hover:before {
-      width: 100%;
-    }
-    
-    .mobile-centered-button:hover {
-      color: #000;
-    }
-    
-    .mobile-centered-button .arrow-icon {
-      width: 18px;
-      height: 18px;
-      transition: transform 0.3s ease;
-    }
-    
-    .mobile-centered-button:hover .arrow-icon {
-      transform: translateX(3px);
-      stroke: #000;
-    }
-    
-    /* Mobile text styling */
-    .main-title {
-      font-size: 3rem;
-      line-height: 1.1;
-      margin-bottom: 12px;
-      font-weight:600;
-    }
-    
-    /* Footer styling */
-    .footer-banner {
-      margin-top: 0;
-      background-color: #f9f9f9;
-      font-size:6px;
-      padding: 15px 0;
-    }
-    
-    .desktop-footer-text {
-      display: none;
-    }
-    
-    .mobile-footer-text {
-      display: block;
-      font-size: 6px;
-      padding: 0 15px;
-      letter-spacing: 0.5px;
-    }
-  }
-
-  /* Extra Small Mobile Devices (under 470px) */
-  @media screen and (max-width: 470px) {
-    .mobile-centered-button {
-      padding: 8px 20px;
-      font-weight:300;
-      line-height:20.48px;
-      font-size: 15px;
-      min-width: 120px;
-      margin-right:10px;
-    }
-
-    .mobile-centered-button .arrow-icon {
-      width: 24px;
-      height: 24px;
-    }
-
-    .main-title {
-      font-family:'Jost';
-      font-weight:500;
-      line-height:100%;
-      font-size: 30px;
-      margin-bottom: 20px;
-      margin-left:25px;
-    }
-
-    .mobile-description {
-      font-family:'Jost';
-      font-size: 17px;
-      line-height:130%;
-      margin-bottom: 10px;
-      margin-left: 40px;
-    }
-
-    .mobile-content {
-      min-height: 200px;
-    }
-
-    .mobile-centered-button {
-      transform: translate(-50%, -50%) scale(0.9);
-    }
-    .footer-banner p {
-      font-weight:400;
-      letter-spacing:0px;
-      font-size: 12.5px;
-      text-transform: uppercase;
-      letter-spacing: 0px;
-      font-weight: 400;
-      color: {{ section.settings.footer_text_color }};
-    }
-  }
 </style>
 
 {% schema %}
