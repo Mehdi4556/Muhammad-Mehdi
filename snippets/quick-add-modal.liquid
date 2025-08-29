@@ -427,19 +427,14 @@
 
 <script>
 function openPopup(data = {
-  title: 'Demo Product',
-  price: '$99.99',
+  title: 'Product Name',
+  price: 'Price not available',
   image: '/placeholder.svg?height=600&width=400',
-  description: 'This is a demo product for testing the quick-add functionality.',
-  colors: ['Black', 'White', 'Red'],
-  sizes: ['S', 'M', 'L', 'XL'],
-  variantId: '123456789',
-  variants: [
-    { id: '123456789', option1: 'Black', option2: 'S', available: true },
-    { id: '123456790', option1: 'Black', option2: 'M', available: true },
-    { id: '123456791', option1: 'White', option2: 'S', available: true },
-    { id: '123456792', option1: 'White', option2: 'M', available: true },
-  ],
+  description: 'Product details coming soon.',
+  colors: ['Black', 'White'],
+  sizes: ['XS', 'S', 'M', 'L', 'XL'],
+  variantId: null,
+  variants: [],
 }) {
   window.currentProductData = data;
 
@@ -661,6 +656,7 @@ document.addEventListener('click', e => {
   const title = container.querySelector('.product-title, .product-name, h3, h2')?.textContent?.trim();
   const price = container.querySelector('.price, .product-price, .money')?.textContent?.trim();
   const image = container.querySelector('img')?.src;
+  const description = container.querySelector('.product-description, .product-summary, .product-excerpt, .rte, .description')?.textContent?.trim();
   
   const productId = container.dataset.productId || 
                    container.querySelector('[data-product-id]')?.dataset.productId || 
@@ -706,7 +702,7 @@ document.addEventListener('click', e => {
       title: title || 'Product Name',
       price: price || 'Price not available',
       image: image || '/placeholder.svg?height=600&width=400',
-      description: 'This product is crafted with premium materials and attention to detail.',
+      description: description || 'Product details coming soon.',
       colors: ['Black', 'White'],
       sizes: ['XS', 'S', 'M', 'L', 'XL'],
       variantId,
@@ -726,9 +722,21 @@ async function fetchProductData(productUrl, baseProductData) {
     const response = await fetch(productUrl.split('?')[0] + '.js');
     const productJson = await response.json();
 
-    if (productJson?.variants && window.currentProductData?.id == baseProductData.id) {
-      window.currentProductData.variants = productJson.variants;
-      updatePopupWithVariants(productJson.variants);
+    if (productJson && window.currentProductData?.id == baseProductData.id) {
+      // Update variants if available
+      if (productJson.variants) {
+        window.currentProductData.variants = productJson.variants;
+        updatePopupWithVariants(productJson.variants);
+      }
+      
+      // Update description if available and not already set properly
+      if (productJson.description && (!window.currentProductData.description || window.currentProductData.description === 'Product details coming soon.')) {
+        window.currentProductData.description = productJson.description;
+        const descriptionElement = document.getElementById('popup-product-description');
+        if (descriptionElement) {
+          descriptionElement.textContent = productJson.description;
+        }
+      }
     }
   } catch (error) {
     console.error('Could not fetch product data:', error);
