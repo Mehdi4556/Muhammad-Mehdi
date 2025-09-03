@@ -600,6 +600,30 @@
           updateCartAfterAdd(data, productData, variantId);
           utils.notify('Added to cart!', 'success');
           closePopup();
+          
+          // Check if gift should be added (Black + Medium combination)
+          // Add delay before redirect to allow gift to be processed
+          const shouldAddGift = selectedColor?.toLowerCase() === 'black' && 
+                               (selectedSize?.toLowerCase() === 'medium' || 
+                                selectedSize?.toLowerCase() === 'm' ||
+                                selectedSize?.toLowerCase() === 'med');
+          
+          if (shouldAddGift) {
+            checkAndAddGift(selectedColor, selectedSize).then(() => {
+              // Redirect after gift is processed
+              setTimeout(() => {
+                window.location.href = Theme.routes.cart_url;
+              }, 1000); // 1 second delay to see gift notification
+            }).catch(() => {
+              // Redirect even if gift fails
+              setTimeout(() => {
+                window.location.href = Theme.routes.cart_url;
+              }, 500);
+            });
+          } else {
+            // No gift needed, redirect immediately
+            window.location.href = Theme.routes.cart_url;
+          }
         }
       })
       .catch((error) => {
@@ -707,6 +731,58 @@
     return variant?.id;
   }
 
+  function findGiftVariantId(giftProduct, targetSize) {
+    if (!giftProduct.variants?.length) return null;
+
+    const commonSizes = ['xs', 's', 'm', 'l', 'xl', 'xxl', 'small', 'medium', 'large', 'extra small', 'extra large'];
+    
+    const sample = giftProduct.variants[0];
+    let sizeKey = null;
+
+    // Find which option contains the size
+    ['option1', 'option2', 'option3'].forEach((key) => {
+      if (sample[key]) {
+        const val = sample[key].toLowerCase();
+        if (commonSizes.includes(val) && !sizeKey) sizeKey = key;
+      }
+    });
+
+    // If no size option detected, try option1 and option2 as fallbacks
+    if (!sizeKey) {
+      sizeKey = 'option1'; // Try option1 first
+    }
+
+    // Look for variant that matches the target size (Medium)
+    let variant = giftProduct.variants.find((v) => {
+      if (!sizeKey || !v[sizeKey]) return false;
+      const variantSize = v[sizeKey].toLowerCase();
+      const targetSizeLower = targetSize.toLowerCase();
+      
+      // Match Medium, M, or Med
+      return (variantSize === targetSizeLower || 
+              variantSize === 'm' || 
+              variantSize === 'med') && 
+              v.available !== false;
+    });
+
+    // If not found with option1, try option2
+    if (!variant && sizeKey === 'option1') {
+      sizeKey = 'option2';
+      variant = giftProduct.variants.find((v) => {
+        if (!sizeKey || !v[sizeKey]) return false;
+        const variantSize = v[sizeKey].toLowerCase();
+        const targetSizeLower = targetSize.toLowerCase();
+        
+        return (variantSize === targetSizeLower || 
+                variantSize === 'm' || 
+                variantSize === 'med') && 
+                v.available !== false;
+      });
+    }
+
+    return variant;
+  }
+
   function testCart() {
     fetch(Theme.routes.cart_url + '.js')
       .then((response) => response.json())
@@ -714,7 +790,189 @@
       .catch(() => alert('Error accessing cart'));
   }
 
+  // Function to check if gift should be added and add it
+  async function checkAndAddGift(selectedColor, selectedSize) {
+    
+    // Check multiple size variations (M, Medium, m, medium)
+    const isBlack = selectedColor?.toLowerCase() === 'black';
+    const isMedium = selectedSize?.toLowerCase() === 'medium' || 
+                     selectedSize?.toLowerCase() === 'm' ||
+                     selectedSize?.toLowerCase() === 'med';
+    
+    if (isBlack && isMedium) {
+      utils.notify('Adding gift item...', 'info');
+      
+      try {
+        // Try to find and add the "Blue Silk Tuxedo" as a gift
+        await addBlueSilkTuxedoGift();
+      } catch (error) {
+        utils.notify('Could not add gift item', 'warning');
+      }
+    }
+  }
+
+  // Function to add Blue Silk Tuxedo as gift
+  async function addBlueSilkTuxedoGift() {
+    // Try multiple possible product handles for Blue Silk Tuxedo
+    const possibleHandles = [
+      'blue-silk-tuxedo',
+      'silk-tuxedo',
+      'blue-tuxedo',
+      'tuxedo',
+      'formal-wear',
+      'silk-suit',
+      'blue-suit',
+      'gift-tuxedo',
+      'free-tuxedo'
+    ];
+    
+    let giftProduct = null;
+    let workingHandle = null;
+    
+    // Try each handle until we find a working product
+    for (const handle of possibleHandles) {
+      try {
+        const giftProductUrl = `/products/${handle}`;
+        
+        const response = await fetch(giftProductUrl + '.js');
+        
+        if (response.ok) {
+          giftProduct = await response.json();
+          workingHandle = handle;
+          break;
+        }
+      } catch (error) {
+        // Handle error silently
+      }
+    }
+    
+    // If no specific gift product found, try to get any product from the store as fallback
+    if (!giftProduct) {
+      try {
+        // Try to get first product from collections endpoint
+        const collectionsResponse = await fetch('/collections/all/products.json?limit=1');
+        if (collectionsResponse.ok) {
+          const collectionsData = await collectionsResponse.json();
+          if (collectionsData.products && collectionsData.products.length > 0) {
+            giftProduct = collectionsData.products[0];
+            utils.notify(`🎁 Adding ${giftProduct.title} as gift (fallback)`, 'info');
+          }
+        }
+      } catch (error) {
+        // Handle error silently
+      }
+    }
+    
+    if (!giftProduct) {
+      utils.notify('Blue Silk Tuxedo not found in store', 'warning');
+      return;
+    }
+    
+    // Find the Medium-sized variant using the same logic as the main product
+    let giftVariant = null;
+    if (giftProduct.variants?.length) {
+      // Use the same findVariantId logic to find Medium size variant
+      giftVariant = findGiftVariantId(giftProduct, 'Medium');
+    }
+    
+    // Fallback to first available variant if Medium not found
+    if (!giftVariant) {
+      giftVariant = giftProduct.variants?.find(v => v.available) || giftProduct.variants?.[0];
+    }
+    
+    if (!giftVariant) {
+      utils.notify('Gift product has no available variants', 'warning');
+      return;
+    }
+    
+    // Add the gift to cart with line item properties to mark it as free
+    const formData = new FormData();
+    formData.append('id', giftVariant.id);
+    formData.append('quantity', '1');
+    
+    // Add line item properties to mark this as a free gift
+    formData.append('properties[_gift]', 'true');
+    formData.append('properties[_gift_reason]', 'Free Medium-sized gift with Black + Medium purchase');
+    formData.append('properties[_original_price]', giftVariant.price);
+    formData.append('properties[_gift_price]', '0');
+    
+    const fetchCfg = utils.fetchConfig('javascript', { body: formData });
+    
+    try {
+      const addGiftResponse = await fetch(Theme.routes.cart_add_url, {
+        ...fetchCfg,
+        headers: {
+          ...fetchCfg.headers,
+          Accept: 'application/json',
+        },
+      });
+      
+      if (addGiftResponse.ok) {
+        const giftData = await addGiftResponse.json();
+        
+        if (!giftData.status) {
+          // Successfully added gift
+          const sizeInfo = giftVariant && giftVariant.option1 && giftVariant.option1.toLowerCase().includes('med') ? ' (Medium)' : 
+                           giftVariant && giftVariant.option2 && giftVariant.option2.toLowerCase().includes('med') ? ' (Medium)' : '';
+          utils.notify(`🎁 Free Blue Silk Tuxedo${sizeInfo} (${giftProduct.title}) added to your cart!`, 'success');
+          
+          // Store gift info for cart processing
+          sessionStorage.setItem('recent_gift_item', JSON.stringify({
+            variantId: giftVariant.id,
+            productTitle: giftProduct.title,
+            addedAt: Date.now()
+          }));
+          
+          // Dispatch events for cart update
+          document.dispatchEvent(new CustomEvent('cart:added', { 
+            detail: { product: giftData, variant: giftData, quantity: 1, source: 'gift-add' },
+            bubbles: true 
+          }));
+          
+          // Apply gift discount after cart updates
+          setTimeout(() => {
+            applyGiftDiscount(giftVariant.id);
+          }, 500);
+        } else {
+          utils.notify('Failed to add gift: ' + (giftData.message || 'Unknown error'), 'error');
+        }
+      } else {
+        utils.notify('Failed to add gift to cart', 'error');
+      }
+    } catch (error) {
+      utils.notify('Error adding gift: ' + error.message, 'error');
+    }
+  }
+
   window.testCart = testCart;
+  
+  // Debug function to test gift functionality
+  window.testGift = function() {
+    checkAndAddGift('Black', 'Medium');
+  };
+  
+  // Debug function to try different product handles
+  window.testGiftHandles = async function() {
+    const commonHandles = [
+      'soft-winter-jacket',
+      'winter-jacket',
+      'jacket',
+      'gift-item',
+      'free-gift'
+    ];
+    
+    for (const handle of commonHandles) {
+      try {
+        const response = await fetch(`/products/${handle}.js`);
+        if (response.ok) {
+          const product = await response.json();
+          return handle;
+        }
+      } catch (error) {
+        // Handle error silently
+      }
+    }
+  };
 
   document.addEventListener('DOMContentLoaded', () => {
     const popup = document.getElementById('product-popup');
@@ -784,7 +1042,7 @@
         const data = JSON.parse(script.textContent);
         if (data?.id) variantId = data.id;
       } catch (e) {
-        console.warn('Could not parse variant JSON:', e);
+        // Handle error silently
       }
     }
 
@@ -848,7 +1106,7 @@
         }
       }
     } catch (error) {
-      console.error('Could not fetch product data:', error);
+      // Handle error silently
     }
   }
 
